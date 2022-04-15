@@ -1,43 +1,49 @@
+const { prisma } = require('@prisma/client');
 const { students } = require('./database');
 
-const resolvers = {
-
-    Student: {
+const Student = {
         id: (parent, args, context, info) => parent.id,
         email: (parent) => parent.email,
         fullName: (parent) => parent.fullName,
         dept: (parent) => parent.dept,
         enrolled: (parent) => parent.enrolled,
-    },
+};
 
-    Query: {
+const Query = {
         enrollment: (parent, args) => {
-            return students.filter((student) => student.enrolled)
+            return prisma.student.findMany({
+                where: { enrolled: true },
+            })
         },
         student: (parent, args) => {
-            return students.find((student) => student.id === Number(args.id))
-        },
-    },
-
-    Mutation: {
-        registerStudent: (parent, args) => {
-            students.push({
-                id: students.length + 1,
-                email: args.email,
-                fullName: args.fullName,
-                dept: args.dept,
-                enrolled: false,
+            return prisma.student.findFirst({
+                where: { id: Number(args.id) },
             })
-            return students[students.length - 1]
+        },
+};
+
+const Mutation = {
+        registerStudent: (parent, args) => {
+            return prisma.student.create({
+                data: {
+                    email: args.email,
+                    fullName: args.fullName,
+                },
+            });
         },
         enroll: (parent, args) => {
-            const studentToEnroll = students.find((student) => student.id === Number(args.id))
-            studentToEnroll.enrolled = true
-            return studentToEnroll
+            return prisma.student.update({
+                where: {
+                    id: Number(args.id),
+                },
+                data: {
+                    enrolled: true,
+                },
+            });
         },
-    },
+};
 
-}
+const resolvers = { Student, Query, Mutation }; 
 
 module.exports = {
     resolvers,
