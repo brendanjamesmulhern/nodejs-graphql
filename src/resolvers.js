@@ -1,5 +1,4 @@
-const { prisma } = require('@prisma/client');
-const { students } = require('./database');
+const { prisma } = require('./database');
 
 const Student = {
         id: (parent, args, context, info) => parent.id,
